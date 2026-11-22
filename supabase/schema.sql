@@ -29,3 +29,12 @@ using (auth.uid() = user_id);
 
 create index if not exists posts_created_at_idx on public.posts (created_at desc);
 create index if not exists posts_category_idx on public.posts (category);
+
+
+-- Allow trusted admins to moderate any post.
+-- Set app_metadata.role = 'admin' for trusted users using the Supabase service role
+-- from a secure server/Edge Function only. Never expose the service-role key in the app.
+create policy "Admins can delete any community post"
+on public.posts for delete
+to authenticated
+using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
